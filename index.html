@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6C63FF">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="StudyMate">
+<link rel="manifest" href="manifest.json">
+<title>StudyMate - Secrétaire IA pour étudiants</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
+body { background: #0F0F1A; color: #E8E8F0; min-height: 100vh; }
+.header { background: #16172A; padding: 16px 20px; border-bottom: 1px solid #2A2D4A; display: flex; align-items: center; justify-content: space-between; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header h1 { font-size: 20px; }
+.header p { font-size: 11px; color: #7B7D9E; }
+.container { padding: 20px; max-width: 700px; margin: 0 auto; }
+.card { background: #1E2038; border: 1px solid #2A2D4A; border-radius: 14px; padding: 20px; margin-bottom: 20px; }
+textarea, input[type=text], input[type=email], input[type=password] { width: 100%; padding: 12px; background: #16172A; border: 1px solid #2A2D4A; border-radius: 10px; color: #E8E8F0; font-size: 14px; outline: none; font-family: sans-serif; box-sizing: border-box; }
+textarea { min-height: 100px; resize: vertical; }
+button { width: 100%; padding: 14px; background: #6C63FF; border: none; border-radius: 10px; color: white; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 12px; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-secondary { background: #2A2D4A; font-size: 13px; padding: 10px; }
+.btn-success { background: #4CAF50; }
+.btn-link { background: none; color: #8B85FF; font-size: 13px; padding: 8px; text-decoration: underline; font-weight: 400; margin-top: 4px; }
+.tag { display: inline-block; padding: 4px 12px; border-radius: 20px; background: #6C63FF22; color: #8B85FF; font-size: 12px; margin: 4px; }
+.step { padding: 12px; border: 1px solid #2A2D4A; border-radius: 10px; margin-bottom: 8px; }
+.hidden { display: none; }
+.loading { text-align: center; padding: 20px; color: #7B7D9E; }
+label { display: block; font-size: 12px; color: #7B7D9E; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px; }
+.chat-box { height: 250px; overflow-y: auto; padding: 12px; background: #16172A; border-radius: 10px; margin-bottom: 10px; }
+.msg-user { text-align: right; margin-bottom: 10px; }
+.msg-user span { background: #6C63FF; padding: 8px 12px; border-radius: 12px; font-size: 13px; display: inline-block; max-width: 80%; }
+.msg-ai { text-align: left; margin-bottom: 10px; }
+.msg-ai span { background: #1E2038; border: 1px solid #2A2D4A; padding: 8px 12px; border-radius: 12px; font-size: 13px; display: inline-block; max-width: 80%; white-space: pre-wrap; }
+.chat-input { display: flex; gap: 8px; }
+.chat-input input { flex: 1; padding: 12px; background: #16172A; border: 1px solid #2A2D4A; border-radius: 10px; color: #E8E8F0; font-size: 14px; outline: none; }
+.chat-input button { width: auto; padding: 12px 16px; margin: 0; }
+h2 { font-size: 16px; margin-bottom: 12px; }
+.error-box { background: #2A1020; border: 1px solid #FF4466; border-radius: 10px; padding: 12px; color: #FF8899; font-size: 13px; margin-bottom: 12px; display: none; }
+.success-box { background: #102A10; border: 1px solid #44FF66; border-radius: 10px; padding: 12px; color: #88FF99; font-size: 13px; margin-bottom: 12px; display: none; }
+.credits-bar { background: #1E2038; border: 1px solid #2A2D4A; border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.credits-count { font-size: 22px; font-weight: 700; color: #6C63FF; }
+.progress-bar { height: 6px; background: #2A2D4A; border-radius: 10px; margin-top: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: #6C63FF; border-radius: 10px; transition: width 0.3s; }
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+.auth-tab { flex: 1; padding: 12px; background: #1E2038; border: none; border-radius: 10px; color: #7B7D9E; font-size: 14px; font-weight: 700; cursor: pointer; text-align: center; margin-top: 0; }
+.auth-tab.active { background: #6C63FF; color: white; }
+.paywall { background: linear-gradient(135deg, #1E2038, #2A1040); border: 1px solid #6C63FF; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 20px; }
+.price { font-size: 28px; font-weight: 700; color: #6C63FF; margin: 12px 0; }
+.about-box { background: #12132A; border: 1px solid #2A2D4A; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; color: #7B7D9E; line-height: 1.7; }
+.about-box h3 { color: #E8E8F0; font-size: 15px; margin-bottom: 8px; }
+.nav-tabs { display: flex; gap: 4px; margin-bottom: 20px; background: #16172A; border-radius: 12px; padding: 4px; overflow-x: auto; }
+.nav-tab { flex: 1; min-width: 60px; padding: 10px 4px; background: none; border: none; border-radius: 8px; color: #7B7D9E; font-size: 11px; font-weight: 700; cursor: pointer; text-align: center; margin: 0; white-space: nowrap; }
+.nav-tab.active { background: #6C63FF; color: white; }
+.history-item { background: #16172A; border: 1px solid #2A2D4A; border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; }
+.history-item h4 { font-size: 13px; color: #E8E8F0; margin-bottom: 4px; }
+.history-item p { font-size: 11px; color: #7B7D9E; }
+.stat-card { background: #16172A; border: 1px solid #2A2D4A; border-radius: 12px; padding: 16px; text-align: center; flex: 1; }
+.stat-num { font-size: 24px; font-weight: 700; color: #6C63FF; }
+.stat-label { font-size: 11px; color: #7B7D9E; margin-top: 4px; }
+.stats-row { display: flex; gap: 10px; margin-bottom: 20px; }
+.admin-badge { background: #FF446622; border: 1px solid #FF4466; border-radius: 20px; padding: 4px 10px; font-size: 11px; color: #FF8899; }
+.streak-box { background: linear-gradient(135deg, #2A1A00, #3A2A00); border: 1px solid #FFD70055; border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+.streak-num { font-size: 28px; font-weight: 700; color: #FFD700; }
+.quiz-option { background: #16172A; border: 2px solid #2A2D4A; border-radius: 10px; padding: 14px; margin-bottom: 10px; cursor: pointer; font-size: 14px; }
+.quiz-option.correct { border-color: #4CAF50; background: #102A10; color: #88FF99; }
+.quiz-option.wrong { border-color: #FF4466; background: #2A1020; color: #FF8899; }
+.upload-zone { border: 2px dashed #2A2D4A; border-radius: 14px; padding: 30px; text-align: center; margin-bottom: 20px; cursor: pointer; }
+.score-box { background: linear-gradient(135deg, #1E2038, #2A1040); border: 1px solid #6C63FF; border-radius: 14px; padding: 24px; text-align: center; margin-bottom: 20px; }
+.score-num { font-size: 48px; font-weight: 700; color: #6C63FF; }
+.user-info { display: flex; align-items: center; gap: 8px; }
+.welcome-banner { background: linear-gradient(135deg, #1E2038, #2A1040); border: 1px solid #6C63FF55; border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; text-align: center; }
+.welcome-banner p { font-size: 13px; color: #8B85FF; margin-top: 6px; }
+.password-wrapper { position: relative; }
+.password-wrapper input { padding-right: 44px; }
+.eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #7B7D9E; cursor: pointer; padding: 0; margin: 0; width: auto; font-size: 18px; }
+</style>
+</head>
+<!-- PAGE CONNEXION -->
+<div id="authPage">
+  <div style="padding:40px 20px; max-width:400px; margin:0 auto;">
+    <div style="text-align:center; margin-bottom:30px;">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:64px;height:64px;margin:0 auto;display:block;">
+        <rect width="64" height="64" rx="16" fill="#6C63FF"/>
+        <path d="M32 14L52 24V26L32 36L12 26V24L32 14Z" fill="white"/>
+        <path d="M20 30V42C20 42 26 48 32 48C38 48 44 42 44 42V30L32 36L20 30Z" fill="white" opacity="0.8"/>
+        <rect x="50" y="26" width="3" height="14" rx="1.5" fill="white"/>
+        <circle cx="51.5" cy="42" r="3" fill="white"/>
+      </svg>
+      <h1 style="font-size:24px; margin-top:12px;">StudyMate</h1>
+      <p style="color:#7B7D9E; font-size:13px;">Secrétaire IA pour étudiants</p>
+    </div>
+    <div class="about-box">
+      <h3>📚 Qu'est-ce que StudyMate ?</h3>
+      Votre assistant IA 24h/24 : analysez vos sujets, uploadez vos cours PDF, générez des quiz et simulez vos examens ! <strong style="color:#8B85FF">3 analyses gratuites</strong> pour commencer !
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Connexion</button>
+      <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Inscription</button>
+    </div>
+    <div class="error-box" id="authError"></div>
+    <div class="success-box" id="authSuccess"></div>
+    <div class="card">
+      <label>EMAIL</label>
+      <input type="email" id="authEmail" placeholder="votre@email.com"/>
+      <label style="margin-top:12px">MOT DE PASSE</label>
+      <div class="password-wrapper">
+        <input type="password" id="authPassword" placeholder="••••••••"/>
+        <button class="eye-btn" onclick="togglePassword()" type="button">👁</button>
+      </div>
+      <button onclick="handleAuth()" id="authBtn">Se connecter</button>
+      <button class="btn-link" onclick="motDePasseOublie()">Mot de passe oublié ?</button>
+    </div>
+  </div>
+</div>
+<body>
+<!-- PAGE PRINCIPALE -->
+<div id="mainPage" class="hidden">
+  <div class="header">
+    <div class="header-left">
+      <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px;">
+        <rect width="64" height="64" rx="16" fill="#6C63FF"/>
+        <path d="M32 14L52 24V26L32 36L12 26V24L32 14Z" fill="white"/>
+        <path d="M20 30V42C20 42 26 48 32 48C38 48 44 42 44 42V30L32 36L20 30Z" fill="white" opacity="0.8"/>
+        <rect x="50" y="26" width="3" height="14" rx="1.5" fill="white"/>
+        <circle cx="51.5" cy="42" r="3" fill="white"/>
+      </svg>
+      <div><h1>StudyMate</h1><p>SECRÉTAIRE IA POUR ÉTUDIANTS</p></div>
+    </div>
+    <div class="user-info">
+      <span id="adminBadge" class="admin-badge hidden">👑</span>
+      <button class="btn-secondary" onclick="deconnexion()" style="width:auto;padding:8px 12px;margin:0;font-size:12px;">Déco</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="navAnalyse" onclick="switchNav('analyse')">🚀 Analyser</button>
+      <button class="nav-tab" id="navPdf" onclick="switchNav('pdf')">📄 PDF</button>
+      <button class="nav-tab" id="navQuiz" onclick="switchNav('quiz')">🧠 Quiz</button>
+      <button class="nav-tab" id="navExamen" onclick="switchNav('examen')">📝 Examen</button>
+      <button class="nav-tab" id="navHistorique" onclick="switchNav('historique')">📋 Historique</button>
+      <button class="nav-tab" id="navAdmin" onclick="switchNav('admin')">👑 Admin</button>
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <!-- ANALYSER -->
+    <div id="pageAnalyse">
+      <div class="welcome-banner" id="welcomeBanner">
+        <span style="font-size:24px">🎉</span>
+        <p id="welcomeMsg">Bienvenue sur StudyMate !</p>
+      </div>
+      <div class="streak-box">
+        <span style="font-size:28px">🔥</span>
+        <div>
+          <div class="streak-num" id="streakNum">0</div>
+          <div style="font-size:11px;color:#7B7D9E;">jours consécutifs</div>
+        </div>
+        <div style="margin-left:auto;text-align:right;">
+          <div style="font-size:11px;color:#7B7D9E;">Niveau</div>
+          <div style="font-size:13px;color:#FFD700;" id="niveauLabel">Débutant</div>
+        </div>
+      </div>
+      <div class="credits-bar" id="creditsBar">
+        <div>
+          <div style="font-size:13px;color:#7B7D9E;">Analyses disponibles</div>
+          <div class="credits-count" id="creditsCount">3</div>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:100%"></div></div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:11px;color:#7B7D9E;">sur 3 gratuites</div>
+          <button onclick="contacterPaiement()" style="width:auto;padding:8px 12px;margin-top:8px;font-size:12px;">⭐ Premium</button>
+        </div>
+      </div>
+      <div id="paywallBox" class="paywall hidden">
+        <span style="font-size:36px">⭐</span>
+        <h3 style="font-size:18px;margin-bottom:8px;">Analyses épuisées !</h3>
+        <p style="font-size:13px;color:#7B7D9E;margin-bottom:16px;">Passez à la version premium !</p>
+        <div class="price">500 FCFA/mois</div>
+        <p style="font-size:12px;color:#7B7D9E;">Orange Money ou MTN Mobile Money</p>
+        <button onclick="contacterPaiement()">💳 Payer et continuer</button>
+      </div>
+      <div id="appContent">
+        <div class="card">
+          <label>VOTRE SUJET DE DEVOIR</label>
+          <textarea id="sujet" placeholder="Collez ou tapez votre sujet ici..."></textarea>
+          <label style="margin-top:12px">TYPE DE DEVOIR</label>
+          <input type="text" id="type" value="exposé" placeholder="exposé, mémoire, thèse..."/>
+          <button id="analyseBtn" onclick="analyser()">🚀 Analyser mon sujet</button>
+        </div>
+        <div class="loading hidden" id="loading">⏳ L'IA analyse votre sujet...</div>
+        <div class="hidden" id="result">
+          <div class="card">
+            <h2>📌 Compréhension du sujet</h2>
+            <p id="summary" style="font-size:14px;line-height:1.7"></p>
+            <div id="keywords" style="margin-top:12px"></div>
+          </div>
+          <div class="card">
+            <h2>📋 Plan proposé</h2>
+            <div id="plan"></div>
+          </div>
+          <div class="card">
+            <h2>✅ Étapes de travail</h2>
+            <div id="etapes"></div>
+          </div>
+          <div class="card">
+            <h2>💬 Posez vos questions à l'IA</h2>
+            <div class="chat-box" id="chatbox"></div>
+            <div class="chat-input">
+              <input id="chatinput" placeholder="Votre question..." onkeydown="if(event.key==='Enter')envoyer()"/>
+              <button onclick="envoyer()">→</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PDF -->
+    <div id="pagePdf" class="hidden">
+      <div class="card">
+        <h2>📄 Upload de cours</h2>
+        <p style="font-size:13px;color:#7B7D9E;margin-bottom:16px;">Uploadez votre cours et l'IA génère un résumé instantané !</p>
+        <div class="upload-zone" onclick="document.getElementById('pdfInput').click()">
+          <span style="font-size:36px">📁</span>
+          <p style="color:#7B7D9E;font-size:13px;margin-top:8px;">Cliquez pour choisir un fichier texte</p>
+          <input type="file" id="pdfInput" accept=".txt" style="display:none" onchange="lireFichier(this)"/>
+        </div>
+        <div id="pdfContenu" class="hidden">
+          <label>CONTENU DU COURS</label>
+          <textarea id="pdfTexte" style="min-height:120px;" placeholder="Le contenu apparaîtra ici..."></textarea>
+          <button onclick="resumePDF()">🤖 Générer le résumé IA</button>
+        </div>
+        <div class="loading hidden" id="loadingPdf">⏳ Résumé en cours...</div>
+        <div id="resumeResult" class="hidden">
+          <h2 style="margin-top:16px;">📌 Résumé du cours</h2>
+          <div id="resumeTexte" style="font-size:14px;line-height:1.7;margin-top:8px;padding:12px;background:#16172A;border-radius:10px;"></div>
+          <button onclick="genererQuizDepuisPDF()" class="btn-success" style="margin-top:12px;">🧠 Générer un quiz depuis ce cours</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUIZ -->
+    <div id="pageQuiz" class="hidden">
+      <div class="card">
+        <h2>🧠 Quiz intelligent</h2>
+        <p style="font-size:13px;color:#7B7D9E;margin-bottom:16px;">L'IA génère des questions automatiquement !</p>
+        <label>SUJET DU QUIZ</label>
+        <input type="text" id="quizSujet" placeholder="Ex: La photosynthèse, Le droit civil..."/>
+        <button onclick="genererQuiz()" id="quizBtn">🎯 Générer le quiz</button>
+      </div>
+      <div class="loading hidden" id="loadingQuiz">⏳ Génération du quiz...</div>
+      <div id="quizContainer" class="hidden">
+        <div id="quizQuestions"></div>
+        <div id="quizScore" class="hidden">
+          <div class="score-box">
+            <div class="score-num" id="scoreNum">0/5</div>
+            <p style="color:#7B7D9E;font-size:13px;margin-top:8px;">Score final</p>
+            <div id="scoreMsg" style="font-size:14px;margin-top:8px;color:#8B85FF;"></div>
+          </div>
+          <button onclick="genererQuiz()">🔄 Nouveau quiz</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAMEN -->
+    <div id="pageExamen" class="hidden">
+      <div class="card">
+        <h2>📝 Mode Examen</h2>
+        <p style="font-size:13px;color:#7B7D9E;margin-bottom:16px;">Simulez un vrai examen avec correction IA !</p>
+        <label>MATIÈRE</label>
+        <input type="text" id="examenSujet" placeholder="Ex: Histoire, Droit, Mathématiques..."/>
+        <label style="margin-top:12px">NIVEAU</label>
+        <input type="text" id="examenNiveau" value="Licence 1" placeholder="Licence 1, Master, BTS..."/>
+        <button onclick="demarrerExamen()" id="examenBtn">📝 Démarrer l'examen</button>
+      </div>
+      <div class="loading hidden" id="loadingExamen">⏳ Préparation...</div>
+      <div id="examenContainer" class="hidden">
+        <div id="examenQuestion"></div>
+        <div id="examenCorrection" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE -->
+    <div id="pageHistorique" class="hidden">
+      <div class="card">
+        <h2>📋 Mes analyses sauvegardées</h2>
+        <div id="historiqueList">
+          <p style="color:#7B7D9E;font-size:13px;">Aucune analyse pour l'instant.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="pageAdmin" class="hidden">
+      <div class="card" style="text-align:center;padding:30px;">
+        <span style="font-size:36px">🔒</span>
+        <p style="color:#7B7D9E;font-size:13px;margin-top:10px;">Accès réservé à l'administrateur</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://laloykqplmfncqvrazqr.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_e-x1gMBl4rxLZatjKYzdRQ_Y2mI-lD9';
+const ADMIN_EMAIL = 'maximeperezdongmo@gmail.com';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let currentTab = 'login';
+let sujetGlobal = "";
+let chatHistory = [];
+let quizData = [];
+let quizReponses = [];
+let pdfContenu = "";
+let historiqueLocal = JSON.parse(localStorage.getItem('studymate_historique') || '[]');
+
+// OEIL MOT DE PASSE
+function togglePassword() {
+  const input = document.getElementById('authPassword');
+  const btn = document.querySelector('.eye-btn');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+// STREAK
+function mettreAJourStreak() {
+  const aujourd = new Date().toDateString();
+  const dernierJour = localStorage.getItem('studymate_dernier_jour');
+  let streak = parseInt(localStorage.getItem('studymate_streak') || '0');
+  if (dernierJour !== aujourd) {
+    const hier = new Date();
+    hier.setDate(hier.getDate() - 1);
+    streak = (dernierJour === hier.toDateString()) ? streak + 1 : 1;
+    localStorage.setItem('studymate_dernier_jour', aujourd);
+    localStorage.setItem('studymate_streak', streak);
+  }
+  document.getElementById('streakNum').textContent = streak;
+  const total = parseInt(localStorage.getItem('studymate_total_analyses') || '0');
+  const niveaux = ['Débutant', 'Apprenti', 'Étudiant', 'Expert', 'Champion'];
+  document.getElementById('niveauLabel').textContent = niveaux[Math.min(Math.floor(total / 3), 4)];
+}
+
+// AUTH
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('authBtn').textContent = tab === 'login' ? 'Se connecter' : "S'inscrire";
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authSuccess').style.display = 'none';
+}
+
+function showAuthError(msg) {
+  const box = document.getElementById('authError');
+  box.textContent = '❌ ' + msg;
+  box.style.display = 'block';
+  setTimeout(() => box.style.display = 'none', 6000);
+}
+
+function showAuthSuccess(msg) {
+  const box = document.getElementById('authSuccess');
+  box.textContent = '✅ ' + msg;
+  box.style.display = 'block';
+}
+
+async function motDePasseOublie() {
+  const email = document.getElementById('authEmail').value.trim();
+  if (!email) return showAuthError("Entrez votre email d'abord !");
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) return showAuthError(error.message);
+  showAuthSuccess('Email de réinitialisation envoyé !');
+}
+
+async function handleAuth() {
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value.trim();
+  if (!email || !password) return showAuthError('Remplissez tous les champs !');
+  if (password.length < 6) return showAuthError('Mot de passe minimum 6 caractères !');
+  const btn = document.getElementById('authBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Chargement...';
+  try {
+    if (currentTab === 'register') {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      await supabase.from('utilisateurs').insert({ email, analyses_restantes: 3, abonne: false });
+      showAuthSuccess('Compte créé ! Connectez-vous maintenant.');
+      switchTab('login');
+    } else {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      currentUser = data.user;
+      await chargerApp();
+    }
+  } catch(e) {
+    showAuthError(e.message);
+  }
+  btn.disabled = false;
+  btn.textContent = currentTab === 'login' ? 'Se connecter' : "S'inscrire";
+}
+
+async function chargerApp() {
+  document.getElementById('authPage').classList.add('hidden');
+  document.getElementById('mainPage').classList.remove('hidden');
+  const prenom = currentUser.email.split('@')[0];
+  document.getElementById('welcomeMsg').textContent = `Bonjour ${prenom} ! 😊`;
+  setTimeout(() => { document.getElementById('welcomeBanner').style.display = 'none'; }, 4000);
+  if (currentUser.email === ADMIN_EMAIL) document.getElementById('adminBadge').classList.remove('hidden');
+  mettreAJourStreak();
+  await mettreAJourCredits();
+  chargerHistorique();
+}
+
+function switchNav(nav) {
+  ['analyse','pdf','quiz','examen','historique','admin'].forEach(n => {
+    const navEl = document.getElementById('nav' + n.charAt(0).toUpperCase() + n.slice(1));
+    const pageEl = document.getElementById('page' + n.charAt(0).toUpperCase() + n.slice(1));
+    if (navEl) navEl.classList.toggle('active', n === nav);
+    if (pageEl) pageEl.classList.toggle('hidden', n !== nav);
+  });
+  if (nav === 'admin' && currentUser.email === ADMIN_EMAIL) chargerAdmin();
+  if (nav === 'historique') chargerHistorique();
+}
+
+async function mettreAJourCredits() {
+  const { data } = await supabase.from('utilisateurs').select('analyses_restantes, abonne').eq('email', currentUser.email).single();
+  if (data) {
+    const credits = data.analyses_restantes;
+    const abonne = data.abonne;
+    document.getElementById('creditsCount').textContent = abonne ? '∞' : credits;
+    document.getElementById('progressFill').style.width = abonne ? '100%' : (credits / 3 * 100) + '%';
+    if (credits <= 0 && !abonne) {
+      document.getElementById('paywallBox').classList.remove('hidden');
+      document.getElementById('appContent').classList.add('hidden');
+      document.getElementById('creditsBar').classList.add('hidden');
+    } else {
+      document.getElementById('paywallBox').classList.add('hidden');
+      document.getElementById('appContent').classList.remove('hidden');
+    }
+  }
+}
+
+async function deconnexion() {
+  await supabase.auth.signOut();
+  document.getElementById('mainPage').classList.add('hidden');
+  document.getElementById('authPage').classList.remove('hidden');
+  currentUser = null;
+}
+
+function contacterPaiement() {
+  alert('Pour activer votre compte Premium, envoyez 500 FCFA via Orange Money ou MTN Mobile Money au +237 674 076 481 (Maxime). Envoyez votre email en message. Votre compte sera activé dans 1 heure !');
+}
+
+function showError(msg) {
+  const box = document.getElementById("errorBox");
+  box.textContent = "❌ " + msg;
+  box.style.display = "block";
+  setTimeout(() => box.style.display = "none", 8000);
+}
+
+async function callClaude(messages, system) {
+  const apiKey = localStorage.getItem('studymate_apikey');
+  if (!apiKey) { showError("Service temporairement indisponible."); throw new Error("Clé API manquante"); }
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 2000, system, messages })
+  });
+  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error?.message || "Erreur API"); }
+  const data = await res.json();
+  return data.content?.[0]?.text || "";
+}
+
+async function analyser() {
+  const sujet = document.getElementById("sujet").value.trim();
+  const type = document.getElementById("type").value.trim();
+  if (!sujet) return alert("Veuillez entrer votre sujet !");
+  const { data } = await supabase.from('utilisateurs').select('analyses_restantes, abonne').eq('email', currentUser.email).single();
+  if (!data.abonne && data.analyses_restantes <= 0) {
+    document.getElementById('paywallBox').classList.remove('hidden');
+    document.getElementById('appContent').classList.add('hidden');
+    return;
+  }
+  sujetGlobal = sujet;
+  const btn = document.getElementById("analyseBtn");
+  btn.disabled = true; btn.textContent = "⏳ Analyse...";
+  document.getElementById("loading").classList.remove('hidden');
+  document.getElementById("result").classList.add('hidden');
+  try {
+    const raw = await callClaude(
+      [{ role: "user", content: `Analyse ce sujet de type "${type}": "${sujet}". Réponds UNIQUEMENT en JSON valide sans balises markdown:{"summary":"résumé en 2 phrases","keywords":["mot1","mot2","mot3","mot4"],"plan":[{"titre":"I. Titre","desc":"description"},{"titre":"II. Titre","desc":"description"},{"titre":"III. Titre","desc":"description"}],"etapes":[{"titre":"Étape 1","desc":"action","duree":"X jours"},{"titre":"Étape 2","desc":"action","duree":"X jours"},{"titre":"Étape 3","desc":"action","duree":"X jours"}]}` }],
+      "Tu es StudyMate, assistant IA pour étudiants camerounais. Réponds en français."
+    );
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const json = JSON.parse(clean.match(/\{[\s\S]*\}/)[0]);
+    document.getElementById("summary").textContent = json.summary;
+    document.getElementById("keywords").innerHTML = json.keywords.map(k => `<span class="tag">${k}</span>`).join("");
+    document.getElementById("plan").innerHTML = json.plan.map(p => `<div class="step"><b style="color:#8B85FF">${p.titre}</b><p style="font-size:13px;color:#7B7D9E;margin-top:4px">${p.desc}</p></div>`).join("");
+    document.getElementById("etapes").innerHTML = json.etapes.map(e => `<div class="step"><b>${e.titre}</b> <span style="color:#6C63FF;font-size:12px">⏱ ${e.duree}</span><p style="font-size:13px;color:#7B7D9E;margin-top:4px">${e.desc}</p></div>`).join("");
+    historiqueLocal.push({ sujet, type, summary: json.summary, keywords: json.keywords, plan: json.plan, etapes: json.etapes, date: new Date().toLocaleDateString('fr-FR') });
+    localStorage.setItem('studymate_historique', JSON.stringify(historiqueLocal));
+    const total = parseInt(localStorage.getItem('studymate_total_analyses') || '0') + 1;
+    localStorage.setItem('studymate_total_analyses', total);
+    if (!data.abonne) await supabase.from('utilisateurs').update({ analyses_restantes: data.analyses_restantes - 1 }).eq('email', currentUser.email);
+    document.getElementById("loading").classList.add('hidden');
+    document.getElementById("result").classList.remove('hidden');
+    chatHistory = []; document.getElementById("chatbox").innerHTML = "";
+    await mettreAJourCredits();
+    mettreAJourStreak();
+  } catch(e) {
+    document.getElementById("loading").classList.add('hidden');
+    showError(e.message);
+  }
+  btn.disabled = false; btn.textContent = "🚀 Analyser mon sujet";
+}
+
+async function envoyer() {
+  const input = document.getElementById("chatinput").value.trim();
+  if (!input) return;
+  const chatbox = document.getElementById("chatbox");
+  chatHistory.push({ role: "user", content: input });
+  chatbox.innerHTML += `<div class="msg-user"><span>${input}</span></div>`;
+  document.getElementById("chatinput").value = "";
+  chatbox.scrollTop = chatbox.scrollHeight;
+  try {
+    const reply = await callClaude(chatHistory, `Tu es StudyMate. Le sujet est: "${sujetGlobal}". Réponds en français.`);
+    chatHistory.push({ role: "assistant", content: reply });
+    chatbox.innerHTML += `<div class="msg-ai"><span>🎓 ${reply}</span></div>`;
+  } catch(e) {
+    chatbox.innerHTML += `<div class="msg-ai"><span>❌ ${e.message}</span></div>`;
+  }
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function lireFichier(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    pdfContenu = e.target.result;
+    document.getElementById('pdfTexte').value = pdfContenu.substring(0, 2000);
+    document.getElementById('pdfContenu').classList.remove('hidden');
+  };
+  reader.readAsText(file);
+}
+
+async function resumePDF() {
+  const texte = document.getElementById('pdfTexte').value.trim();
+  if (!texte) return alert("Aucun contenu !");
+  document.getElementById('loadingPdf').classList.remove('hidden');
+  document.getElementById('resumeResult').classList.add('hidden');
+  try {
+    const resume = await callClaude(
+      [{ role: "user", content: `Résume ce cours de façon claire et structurée pour un étudiant:\n\n${texte.substring(0, 3000)}` }],
+      "Tu es StudyMate, assistant IA pour étudiants. Réponds en français."
+    );
+    document.getElementById('resumeTexte').innerHTML = resume.replace(/\n/g, '<br>');
+    document.getElementById('loadingPdf').classList.add('hidden');
+    document.getElementById('resumeResult').classList.remove('hidden');
+    pdfContenu = texte;
+  } catch(e) {
+    document.getElementById('loadingPdf').classList.add('hidden');
+    showError(e.message);
+  }
+}
+
+async function genererQuizDepuisPDF() {
+  document.getElementById('quizSujet').value = pdfContenu.substring(0, 200);
+  switchNav('quiz');
+  await genererQuiz();
+}
+
+async function genererQuiz() {
+  const sujet = document.getElementById('quizSujet').value.trim();
+  if (!sujet) return alert("Entrez un sujet !");
+  const btn = document.getElementById('quizBtn');
+  btn.disabled = true; btn.textContent = "⏳ Génération...";
+  document.getElementById('loadingQuiz').classList.remove('hidden');
+  document.getElementById('quizContainer').classList.add('hidden');
+  try {
+    const raw = await callClaude(
+      [{ role: "user", content: `Génère 5 questions QCM sur: "${sujet}". Réponds UNIQUEMENT en JSON sans balises markdown: {"questions":[{"question":"...","options":["A) ...","B) ...","C) ...","D) ..."],"reponse":0,"explication":"..."}]}` }],
+      "Tu es un générateur de quiz pour étudiants. Réponds en français."
+    );
+    const clean = raw.replace(/```json|```/g, "").trim();
+    const json = JSON.parse(clean.match(/\{[\s\S]*\}/)[0]);
+    quizData = json.questions;
+    quizReponses = new Array(quizData.length).fill(-1);
+    document.getElementById('quizQuestions').innerHTML = quizData.map((q, qi) => `
+      <div class="card">
+        <h2 style="font-size:14px;">Q${qi+1}: ${q.question}</h2>
+        <div style="margin-top:12px;">
+          ${q.options.map((opt, oi) => `<div class="quiz-option" id="opt_${qi}_${oi}" onclick="repondreQuiz(${qi}, ${oi})">${opt}</div>`).join('')}
+        </div>
+        <div id="expl_${qi}" class="hidden" style="margin-top:10px;padding:10px;background:#16172A;border-radius:8px;font-size:13px;color:#8B85FF;">💡 ${q.explication}</div>
+      </div>
+    `).join('') + `<button onclick="verifierQuiz()">✅ Voir mon score</button>`;
+    document.getElementById('quizScore').classList.add('hidden');
+    document.getElementById('loadingQuiz').classList.add('hidden');
+    document.getElementById('quizContainer').classList.remove('hidden');
+  } catch(e) {
+    document.getElementById('loadingQuiz').classList.add('hidden');
+    showError(e.message);
+  }
+  btn.disabled = false; btn.textContent = "🎯 Générer le quiz";
+}
+
+function repondreQuiz(qi, oi) {
+  quizReponses[qi] = oi;
+  quizData[qi].options.forEach((_, i) => {
+    document.getElementById(`opt_${qi}_${i}`).style.borderColor = '';
+  });
+  document.getElementById(`opt_${qi}_${oi}`).style.borderColor = '#6C63FF';
+}
+
+function verifierQuiz() {
+  let score = 0;
+  quizData.forEach((q, qi) => {
+    const correct = q.reponse;
+    const reponse = quizReponses[qi];
+    if (reponse === correct) { score++; document.getElementById(`opt_${qi}_${correct}`).classList.add('correct'); }
+    else {
+      if (reponse >= 0) document.getElementById(`opt_${qi}_${reponse}`).classList.add('wrong');
+      document.getElementById(`opt_${qi}_${correct}`).classList.add('correct');
+    }
+    document.getElementById(`expl_${qi}`).classList.remove('hidden');
+  });
+  const pct = Math.round(score / quizData.length * 100);
+  document.getElementById('scoreNum').textContent = `${score}/${quizData.length}`;
+  const msgs = ['Continuez à réviser 💪', 'Pas mal, encore un effort 📚', 'Bien joué 🎉', 'Excellent 🏆', 'Parfait Champion 🌟'];
+  document.getElementById('scoreMsg').textContent = msgs[Math.min(Math.floor(pct/25), 4)];
+  document.getElementById('quizScore').classList.remove('hidden');
+}
+
+async function demarrerExamen() {
+  const sujet = document.getElementById('examenSujet').value.trim();
+  const niveau = document.getElementById('examenNiveau').value.trim();
+  if (!sujet) return alert("Entrez une matière !");
+  const btn = document.getElementById('examenBtn');
+  btn.disabled = true; btn.textContent = "⏳ Préparation...";
+  document.getElementById('loadingExamen').classList.remove('hidden');
+  document.getElementById('examenContainer').classList.add('hidden');
+  try {
+    const question = await callClaude(
+      [{ role: "user", content: `Génère une question d'examen de niveau ${niveau} en ${sujet}. Question ouverte sérieuse comme dans une université camerounaise. Donne juste la question.` }],
+      "Tu es un professeur d'université camerounais."
+    );
+    document.getElementById('examenQuestion').innerHTML = `
+      <div class="card">
+        <h2>📝 Examen - ${sujet} (${niveau})</h2>
+        <p style="font-size:14px;line-height:1.7;padding:16px;background:#16172A;border-radius:10px;margin:12px 0;">${question}</p>
+        <label>VOTRE RÉPONSE</label>
+        <textarea id="reponseEtudiant" style="min-height:150px;" placeholder="Rédigez votre réponse ici..."></textarea>
+        <button onclick="corrigerExamen('${sujet}', \`${question.replace(/`/g, "'")}\`)">🎓 Corriger ma réponse</button>
+      </div>
+    `;
+    document.getElementById('examenCorrection').classList.add('hidden');
+    document.getElementById('loadingExamen').classList.add('hidden');
+    document.getElementById('examenContainer').classList.remove('hidden');
+  } catch(e) {
+    document.getElementById('loadingExamen').classList.add('hidden');
+    showError(e.message);
+  }
+  btn.disabled = false; btn.textContent = "📝 Démarrer l'examen";
+}
+
+async function corrigerExamen(sujet, question) {
+  const reponse = document.getElementById('reponseEtudiant').value.trim();
+  if (!reponse) return alert("Écrivez votre réponse !");
+  const correction = document.getElementById('examenCorrection');
+  correction.innerHTML = '<div class="loading">⏳ Correction...</div>';
+  correction.classList.remove('hidden');
+  try {
+    const corr = await callClaude(
+      [{ role: "user", content: `Question: ${question}\nRéponse étudiant: ${reponse}\nCorrige comme un professeur: 1) Note /20, 2) Points forts, 3) Points à améliorer, 4) Éléments manquants, 5) Conseil.` }],
+      "Tu es un professeur bienveillant d'université camerounaise."
+    );
+    correction.innerHTML = `
+      <div class="card">
+        <h2>🎓 Correction du professeur</h2>
+        <div style="font-size:14px;line-height:1.8;white-space:pre-wrap;">${corr}</div>
+        <button onclick="demarrerExamen()" style="margin-top:12px;">📝 Nouvel examen</button>
+      </div>
+    `;
+  } catch(e) {
+    correction.innerHTML = `<p style="color:#FF8899;">❌ ${e.message}</p>`;
+  }
+}
+
+function chargerHistorique() {
+  const liste = document.getElementById('historiqueList');
+  if (historiqueLocal.length === 0) {
+    liste.innerHTML = '<p style="color:#7B7D9E;font-size:13px;">Aucune analyse pour l\'instant.</p>';
+    return;
+  }
+  liste.innerHTML = historiqueLocal.slice().reverse().map((h, i) => `
+    <div class="history-item" onclick="voirHistorique(${historiqueLocal.length - 1 - i})">
+      <h4>📄 ${h.sujet.substring(0, 50)}...</h4>
+      <p>${h.type} • ${h.date}</p>
+    </div>
+  `).join('');
+}
+
+function voirHistorique(index) {
+  const h = historiqueLocal[index];
+  switchNav('analyse');
+  document.getElementById('sujet').value = h.sujet;
+  document.getElementById('type').value = h.type;
+  document.getElementById('summary').textContent = h.summary;
+  document.getElementById('keywords').innerHTML = h.keywords.map(k => `<span class="tag">${k}</span>`).join('');
+  document.getElementById('plan').innerHTML = h.plan.map(p => `<div class="step"><b style="color:#8B85FF">${p.titre}</b><p style="font-size:13px;color:#7B7D9E;margin-top:4px">${p.desc}</p></div>`).join('');
+  document.getElementById('etapes').innerHTML = h.etapes.map(e => `<div class="step"><b>${e.titre}</b><p style="font-size:13px;color:#7B7D9E;margin-top:4px">${e.desc}</p></div>`).join('');
+  document.getElementById('result').classList.remove('hidden');
+}
+
+async function chargerAdmin() {
+  if (currentUser.email !== ADMIN_EMAIL) return;
+  const { data: users } = await supabase.from('utilisateurs').select('*');
+  const total = users ? users.length : 0;
+  const abonnes = users ? users.filter(u => u.abonne).length : 0;
+  document.getElementById('pageAdmin').innerHTML = `
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Étudiants</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#4CAF50">${abonnes}</div><div class="stat-label">Premium</div></div>
+      <div class="stat-card"><div class="stat-num" style="color:#FFD700;font-size:18px;">${abonnes*500}</div><div class="stat-label">FCFA/mois</div></div>
+    </div>
+    <div class="card">
+      <h2>👥 Étudiants</h2>
+      ${users ? users.map(u => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;border-bottom:1px solid #2A2D4A;">
+          <div>
+            <div style="font-size:13px;">${u.email}</div>
+            <div style="font-size:11px;color:#7B7D9E;">${u.analyses_restantes} analyses restantes</div>
+          </div>
+          ${u.abonne ? '<span style="color:#4CAF50;font-size:12px;">⭐</span>' : `<button onclick="activerPremium('${u.email}')" style="width:auto;padding:6px 10px;margin:0;font-size:11px;">Activer</button>`}
+        </div>
+      `).join('') : ''}
+    </div>
+  `;
+}
+
+async function activerPremium(email) {
+  await supabase.from('utilisateurs').update({ abonne: true }).eq('email', email);
+  alert('✅ Premium activé pour ' + email);
+  chargerAdmin();
+}
+
+supabase.auth.getSession().then(({ data: { session } }) => {
+  if (session) { currentUser = session.user; chargerApp(); }
+});
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
+</body>
+</html>
